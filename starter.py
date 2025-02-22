@@ -25,7 +25,7 @@ def extract_food_name(user_input: str) -> FoodNameExtraction:
         messages=[
             {
                 "role": "system",
-                "content": "Analyze the text for extracting the food name to cook and get the recipe for",
+                "content": "Analyze the text for extracting the food name to make or cook and get the recipe for",
             },
             {
                 "role": "user",
@@ -40,10 +40,11 @@ def extract_food_name(user_input: str) -> FoodNameExtraction:
 
 class RecipeExtraction(BaseModel):
     """second llm call to get the list of recipe"""
+
     ingrediends: list[str] = Field(description="list of all the ingredients required to make this food")
     #ingredient_preparation: list[str] = Field(description="Step on how to prepare the ingredients for this recipe")
-    #recipe_process = list[str] = Field(description="Steps of how to make this recipe")
-
+    recipe_process: str = Field(description="detailed assistance on how to make or cook this food")
+    #recipe: list[str:str] = Field(description="steps to make the food and their descriptions")
 def getRecipeDetails(description: str) -> RecipeExtraction:
 
     completion = client.beta.chat.completions.parse(
@@ -63,15 +64,17 @@ def getRecipeDetails(description: str) -> RecipeExtraction:
     result = completion.choices[0].message.parsed
     return result
 
+
 def start():
 
-    food_to_make = input("What would you like to make today")
+    food_to_make = input("What would you like to make today: ")
     first_response = extract_food_name(food_to_make)
-    print(first_response.food_to_cook, first_response.is_valid_food, first_response.confidence_score)
+    print(first_response.food_to_cook, first_response.is_valid_food, first_response.confidence_score, first_response.description)
     second_response = getRecipeDetails(first_response.description)
     print(second_response.ingrediends)
     #print(second_response.ingredient_preparation)
-    #print(second_response.recipe_process)
+    print(second_response.recipe_process)
+    #print(second_response.recipe)
 
 if __name__ == "__main__":
     start()
